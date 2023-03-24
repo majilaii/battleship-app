@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon ./build/index",
+    "test": "jest",
+    "start": "jest && nodemon ./build/index",
     "build": "tsc --watch"
   },
   "author": "",
@@ -17,9 +17,14 @@
     "mongoose": "^6.7.3"
   },
   "devDependencies": {
+    "@babel/preset-typescript": "^7.21.0",
+    "@jest/globals": "^29.5.0",
     "@types/cors": "^2.8.13",
     "@types/express": "^4.17.17",
+    "@types/jest": "^29.5.0",
     "@types/node": "^18.15.5",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.0.5",
     "typescript": "^5.0.2"
   }
 }

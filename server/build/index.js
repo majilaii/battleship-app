@@ -31,16 +31,16 @@ const cors_1 = __importDefault(require("cors"));
 dotenv.config();
 const express_1 = __importDefault(require("express"));
 const gameRouter_1 = require("./routers/gameRouter");
-console.log("hi");
-const app = (0, express_1.default)();
-const port = process.env.PORT || 5000;
+const app = (0, express_1.default)(); //Initiate Express App
+app.use(express_1.default.json()); // Express bodyparser
+const port = process.env.PORT || 5000; // Get PORT from .env, but since it is not going into production, this is not needed
 const corsOptions = {
     origin: "*",
     methods: "GET,PUT,POST,PATCH,DELETE",
     allowedHeaders: "Content-Type",
     optionsSuccessStatus: 200, // Send this status for preflight requests
 };
-app.use((0, cors_1.default)(corsOptions));
+app.use((0, cors_1.default)(corsOptions)); // Apply cors
 app.get("/", (req, res) => {
     res.send("Hello World");
 });

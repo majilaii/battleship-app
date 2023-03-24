@@ -15,7 +15,6 @@ function startGame(req, res) {
     }
     computerGame = (0, generateBoard_1.generateRandomBoard)();
     playerGame = (0, generateBoard_1.generateBoard)();
-    console.log(playerGame.allShipsSunk());
     const { playerShipPlacement } = req.body;
     //checking the inputs
     if (!Array.isArray(playerShipPlacement)) {

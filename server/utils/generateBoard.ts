@@ -10,10 +10,11 @@ export function generateRandomBoard(): Board {
   const destroyer = new Ship("destroyer", 2, "computer", "", []);
 
   // Place the ships on the board randomly
-  board.placeShipsRandom(carrier);
-  board.placeShipsRandom(battleship);
-  board.placeShipsRandom(cruiser);
-  board.placeShipsRandom(submarine);
+
+  // board.placeShipsRandom(carrier);
+  // board.placeShipsRandom(battleship);
+  // board.placeShipsRandom(cruiser);
+  // board.placeShipsRandom(submarine);
   board.placeShipsRandom(destroyer);
 
   // Return the board

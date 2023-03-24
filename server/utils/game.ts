@@ -1,6 +1,4 @@
-// Define constants
-const BOARD_SIZE = 10;
-
+// define Ship class
 export class Ship {
   name: string;
   size: number;
@@ -21,6 +19,7 @@ export class Ship {
     this.coordinates = coordinates;
     this.owner = owner;
     this.hits = 0;
+    if (this.orientation === "") this.orientation = this.randomOrientation();
   }
 
   randomOrientation(): string {
@@ -49,9 +48,9 @@ export class Board {
     this.board = [];
     this.ships = [];
 
-    for (let i = 0; i < BOARD_SIZE; i++) {
+    for (let i = 0; i < 10; i++) {
       this.board[i] = [];
-      for (let j = 0; j < BOARD_SIZE; j++) {
+      for (let j = 0; j < 10; j++) {
         this.board[i][j] = { occupied: false, ship: null, shot: false };
       }
     }
@@ -66,11 +65,11 @@ export class Board {
     //checking if the placement of the ship is valid can be dealt with in the frontend, but I will still code the checks here
     for (let i = 0; i < ship.size; i++) {
       if (orientation === "horizontal") {
-        if (row + i >= BOARD_SIZE || this.board[row][col].occupied) {
+        if (row + i >= 10 || this.board[row][col].occupied) {
           return false;
         }
       } else {
-        if (col + i >= BOARD_SIZE || this.board[row][col].occupied) {
+        if (col + i >= 10 || this.board[row][col].occupied) {
           return false;
         }
       }
@@ -78,12 +77,12 @@ export class Board {
 
     for (let i = 0; i < ship.size; i++) {
       if (orientation === "horizontal") {
-        this.board[row][col].occupied = true;
-        this.board[row][col].ship = ship;
+        this.board[row][col + i].occupied = true;
+        this.board[row][col + i].ship = ship;
         ship.coordinates.push({ row, col: col + i });
       } else {
-        this.board[row][col].occupied = true;
-        this.board[row][col].ship = ship;
+        this.board[row + i][col].occupied = true;
+        this.board[row + i][col].ship = ship;
         ship.coordinates.push({ row: row + 1, col });
       }
     }
@@ -94,52 +93,59 @@ export class Board {
   }
 
   placeShipsRandom(ship: Ship): void {
-    const orientation = Math.random() > 0.5 ? "horizontal" : "vertical";
-    let row: number;
-    let col: number;
+    // Generate a random orientation and position for the ship
+    let row: number = 0;
+    let col: number = 0;
     let valid: boolean = false;
 
-    while (!valid) {
-      row = Math.floor(Math.random() * BOARD_SIZE);
-      col = Math.floor(Math.random() * BOARD_SIZE);
+    // Loop until a valid position is found
+    do {
+      // Pick a random starting cell
+      row = Math.floor(Math.random() * 10);
+      col = Math.floor(Math.random() * 10);
 
+      // Check if the ship fits in the grid without overlapping
       valid = true;
 
       for (let i = 0; i < ship.size; i++) {
-        if (orientation === "horizontal") {
-          if (row + i >= BOARD_SIZE || this.board[row][col].occupied) {
+        if (ship.orientation === "horizontal") {
+          // Check if the cell is within bounds and not occupied
+          if (col + i >= 10 || this.board[row][col + i].occupied) {
             valid = false;
             break;
           }
         } else {
-          if (col + i >= BOARD_SIZE || this.board[row][col].occupied) {
+          // Check if the cell is within bounds and not occupied
+          if (row + i >= 10 || this.board[row + i][col].occupied) {
             valid = false;
             break;
           }
         }
+      }
+    } while (!valid); // Loop until a valid position is found
 
-        for (let i = 0; i < ship.size; i++) {
-          if (orientation === "horizontal") {
-            this.board[row][col].occupied = true;
-            this.board[row][col].ship = ship;
-            ship.coordinates.push({ row, col: col + i });
-          } else {
-            this.board[row][col].occupied = true;
-            this.board[row][col].ship = ship;
-            ship.coordinates.push({ row: row + 1, col });
-          }
-        }
+    // Place the ship on the grid and update the board array
+    for (let i = 0; i < ship.size; i++) {
+      if (ship.orientation === "horizontal") {
+        this.board[row][col + i].occupied = true;
+        this.board[row][col + i].ship = ship;
+        ship.coordinates.push({ row, col: col + i });
+      } else {
+        this.board[row + i][col].occupied = true;
+        this.board[row + i][col].ship = ship;
+        ship.coordinates.push({ row: row + i, col });
       }
     }
 
+    // Add the ship to the ships array
     this.ships.push(ship);
   }
 
   shoot(
     row: number,
     col: number
-  ): { valid: boolean; result?: string; ship?: Ship | null } | void {
-    if (!this.checkWithinBounds) return { valid: false };
+  ): { valid: boolean; result?: string; ship?: Ship | null } {
+    if (!this.checkWithinBounds(row, col)) return { valid: false };
 
     if (this.board[row][col].shot) return { valid: false };
 
@@ -154,16 +160,13 @@ export class Board {
         if (this.allShipsSunk()) {
           return {
             valid: true,
-            result: ship.owner === "computer" ? "You Win" : "You Lose",
+            result: "You Win",
             ship,
           };
         }
         return { valid: true, result: "sunk", ship };
       }
-
-      if (!ship.isSunk) {
-        return { valid: true, result: "hit", ship };
-      }
+      return { valid: true, result: "hit", ship: null };
     } else {
       return { valid: true, result: "miss", ship: null };
     }
@@ -173,9 +176,9 @@ export class Board {
     valid: boolean;
     result?: string;
     ship?: Ship | null;
-  } | void {
-    const row: number = Math.floor(Math.random() * BOARD_SIZE);
-    const col: number = Math.floor(Math.random() * BOARD_SIZE);
+  } {
+    const row: number = Math.floor(Math.random() * 10);
+    const col: number = Math.floor(Math.random() * 10);
 
     if (this.board[row][col].shot) return { valid: false };
 
@@ -187,31 +190,31 @@ export class Board {
       ship.hit();
 
       if (ship.isSunk()) {
+        if (this.allShipsSunk()) {
+          return {
+            valid: true,
+            result: "You Lose",
+            ship,
+          };
+        }
         return { valid: true, result: "sunk", ship };
       }
 
-      if (!ship.isSunk) {
-        return { valid: true, result: "hit", ship };
-      }
+      return { valid: true, result: "hit", ship };
     } else {
       return { valid: true, result: "miss", ship: null };
     }
   }
 
-  checkWithinBounds(size: number, row: number, col: number): boolean {
-    if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) {
+  checkWithinBounds(row: number, col: number): boolean {
+    if (row < 0 || row >= 10 || col < 0 || col >= 10) {
       return false;
     }
+
     return true;
   }
 
   allShipsSunk(): boolean {
-    let AllSunk = true;
-
-    for (let i = 0; i < this.ships.length; i++) {
-      if (!this.ships[i].isSunk()) AllSunk = false;
-    }
-
-    return AllSunk;
+    return this.ships.every((ship) => ship.isSunk());
   }
 }
