@@ -1,6 +1,6 @@
 // Ship.test.js
-import { Board } from "../utils/game";
-import { Ship } from "../utils/game";
+import { Board } from "../utils/gameClass";
+import { Ship } from "../utils/gameClass";
 
 describe("Ship", () => {
   let ship: Ship;
@@ -15,7 +15,7 @@ describe("Ship", () => {
   });
 
   // test the constructor
-  it("should create a ship object with given properties", () => {
+  test("should create a ship object with given properties", () => {
     expect(ship.name).toBe("Battleship");
     expect(ship.size).toBe(4);
     expect(ship.owner).toBe("player");
@@ -38,7 +38,7 @@ describe("Ship", () => {
   });
 
   // test the randomOrientation method
-  it("should return either horizontal or vertical", () => {
+  test("should return either horizontal or vertical", () => {
     const spy = jest.spyOn(Ship.prototype, "randomOrientation");
     const orientation = ship.randomOrientation();
     expect(spy).toHaveBeenCalled();
@@ -47,18 +47,18 @@ describe("Ship", () => {
   });
 
   // test the isSunk method
-  it("should return true if hits equal size", () => {
+  test("should return true if hits equal size", () => {
     ship.hits = ship.size;
     expect(ship.isSunk()).toBe(true);
   });
 
-  it("should return false if hits less than size", () => {
+  test("should return false if hits less than size", () => {
     ship.hits = ship.size - 1;
     expect(ship.isSunk()).toBe(false);
   });
 
-  // test the hit method
-  it("should increment hits by one", () => {
+  // Test the hit method
+  test("should increment hits by one", () => {
     const prevHits = ship.hits;
     ship.hit();
     expect(ship.hits).toBe(prevHits + 1);
@@ -71,6 +71,7 @@ describe("Board", () => {
     board = new Board();
   });
 
+  // Test board constructor
   test("should create a board with 10x10 cells", () => {
     expect(board).toBeInstanceOf(Board);
     expect(board.board.length).toBe(10);
@@ -82,6 +83,7 @@ describe("Board", () => {
     });
   });
 
+  // Test
   test("should check if all ships are sunk", () => {
     // Place two ships on the board
     const spyAllSunk = jest.spyOn(board, "allShipsSunk");
@@ -115,6 +117,8 @@ describe("Board", () => {
     result = board.allShipsSunk();
     expect(spyAllSunk).toBeCalled();
     expect(result).toBe(true);
+
+    spyAllSunk.mockRestore();
   });
 
   test("should place ships manually on the board", () => {
@@ -129,6 +133,10 @@ describe("Board", () => {
     expect(board.board[0][1].occupied).toBe(true);
     expect(board.board[0][2].occupied).toBe(true);
     expect(board.board[0][3].occupied).toBe(true);
+    expect(ship.coordinates[0]).toEqual({ row: 0, col: 0 });
+    expect(ship.coordinates[1]).toEqual({ row: 0, col: 1 });
+    expect(ship.coordinates[2]).toEqual({ row: 0, col: 2 });
+    expect(ship.coordinates[3]).toEqual({ row: 0, col: 3 });
 
     spyPlace.mockRestore();
   });
@@ -208,5 +216,119 @@ describe("Board", () => {
     expect(result).toBe(false);
 
     spyCheck.mockRestore();
+  });
+
+  test("randomShoot should only shoot unshot cells", () => {
+    const board = new Board();
+
+    for (let i = 0; i < 100; i++) {
+      const { result, valid, ship } = board.randomShoot();
+      expect(valid).toBeTruthy();
+    }
+  });
+
+  test("randomShoot should eventually shoot all cells", () => {
+    const board = new Board();
+
+    for (let i = 0; i < 101; i++) {
+      board.randomShoot();
+      if (i === 100) {
+        const { result, valid, ship } = board.randomShoot();
+        expect(valid).toBe(false);
+        expect(result).toBe("No more cells to shoot");
+      }
+    }
+  });
+
+  test("shootIntelligently eventually sinks a ship", () => {
+    const board = new Board();
+    const ship = new Ship("Battleship", 4, "computer", "horizontal", []);
+    const ship2 = new Ship("Carrier", 3, "computer", "horizontal", []);
+    board.placeShipsRandom(ship);
+    board.placeShipsRandom(ship2);
+
+    let sunkShip = false;
+
+    for (let i = 0; i < 101; i++) {
+      const { valid, result, ship } = board.shootIntelligently();
+      if (result === "sunk") {
+        sunkShip = true;
+        expect(ship).not.toBeNull();
+        break;
+      }
+    }
+
+    expect(sunkShip).toBeTruthy();
+  });
+
+  test("shootIntelligently eventually wins a game", () => {
+    const board = new Board();
+    const ship = new Ship("Battleship", 4, "computer", "horizontal", []);
+    board.placeShipsRandom(ship);
+
+    let sunkShip = false;
+
+    for (let i = 0; i < 101; i++) {
+      const { valid, result, ship } = board.shootIntelligently();
+      if (result === "You Win") {
+        sunkShip = true;
+        expect(ship).not.toBeNull();
+        break;
+      }
+    }
+
+    expect(sunkShip).toBeTruthy();
+  });
+
+  test("shootIntelligently wins faster than randomShoot on average", () => {
+    function runGames(shootMethod: "intelligent" | "random") {
+      const board = new Board();
+
+      const carrier = new Ship("carrier", 5, "computer", "", []);
+      const battleship = new Ship("battleship", 4, "computer", "", []);
+      const cruiser = new Ship("cruiser", 3, "computer", "", []);
+      const submarine = new Ship("submarine", 3, "computer", "", []);
+      const destroyer = new Ship("destroyer", 2, "computer", "", []);
+
+      board.placeShipsRandom(carrier);
+      board.placeShipsRandom(battleship);
+      board.placeShipsRandom(cruiser);
+      board.placeShipsRandom(submarine);
+      board.placeShipsRandom(destroyer);
+
+      let tries = 0;
+
+      while (true) {
+        let shootResult;
+        if (shootMethod === "intelligent") {
+          shootResult = board.shootIntelligently();
+        } else {
+          shootResult = board.randomShoot();
+        }
+
+        tries++;
+
+        if (shootResult.result === "You Win") {
+          break;
+        }
+      }
+
+      return tries;
+    }
+
+    const numberOfGames = 100;
+    let intelligentTotalTries = 0;
+    let randomTotalTries = 0;
+
+    for (let i = 0; i < numberOfGames; i++) {
+      intelligentTotalTries += runGames("intelligent");
+      randomTotalTries += runGames("random");
+    }
+
+    const intelligentAverageTries = intelligentTotalTries / numberOfGames;
+    const randomAverageTries = randomTotalTries / numberOfGames;
+
+    console.log({ intelligentAverageTries, randomAverageTries });
+    expect(intelligentAverageTries).toBeLessThan(randomAverageTries);
   });
 });

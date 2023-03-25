@@ -1,5 +1,5 @@
 import { Express, Request, Response } from "express";
-import { Board, Ship } from "../utils/game";
+import { Board, Ship } from "../utils/gameClass";
 import { generateRandomBoard, generateBoard } from "../utils/generateBoard";
 
 let playerTurn = true;
@@ -51,6 +51,13 @@ function startGame(req: Request, res: Response) {
   res.status(200).json({ message: "Ships Placements Successful" });
 }
 
+function startGameRandom(req: Request, res: Response) {
+  computerGame = generateRandomBoard();
+  playerGame = generateRandomBoard();
+
+  res.status(200).json({ message: "Ships Placements Successful" });
+}
+
 function shoot(req: Request, res: Response) {
   if (gameOver) {
     res.status(400).send("Game Is Over: Press Reset");
@@ -74,8 +81,8 @@ function shoot(req: Request, res: Response) {
   }
 
   if (
-    (owner === "player" && playerTurn) ||
-    (owner === "computer" && !playerTurn)
+    (owner === "player" && !playerTurn) ||
+    (owner === "computer" && playerTurn)
   ) {
     // Send a bad request response if it is not the correct turn
     res.status(400).json({ message: "Invalid turn" });
@@ -85,7 +92,7 @@ function shoot(req: Request, res: Response) {
   if (owner === "player") {
     result = computerGame.shoot(row, col);
   } else {
-    result = playerGame.randomShoot();
+    result = playerGame.shootIntelligently();
   }
 
   if (result.valid) {
@@ -119,4 +126,4 @@ function getComputerBoard(req: Request, res: Response) {
   res.status(200).json({ message: computerGame });
 }
 
-export { startGame, shoot, getBoard, getComputerBoard, reset };
+export { startGame, shoot, getBoard, getComputerBoard, reset, startGameRandom };

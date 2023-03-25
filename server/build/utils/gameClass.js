@@ -82,7 +82,7 @@ class Board {
             // Pick a random starting cell
             row = Math.floor(Math.random() * 10);
             col = Math.floor(Math.random() * 10);
-            // Check if the ship fits in the grid without overlapping
+            // Check if the ship fits in the board without overlapping
             valid = true;
             for (let i = 0; i < ship.size; i++) {
                 if (ship.orientation === "horizontal") {
@@ -103,7 +103,7 @@ class Board {
             if (valid)
                 break; // If a valid position is found, exit the loop
         }
-        // Place the ship on the grid and update the board array
+        // Place the ship on the board and update the board array
         for (let i = 0; i < ship.size; i++) {
             if (ship.orientation === "horizontal") {
                 this.board[row][col + i].occupied = true;
@@ -122,10 +122,10 @@ class Board {
     shoot(row, col) {
         // Check if the row and col coordinates are in bound
         if (!this.checkWithinBounds(row, col))
-            return { valid: false };
+            return { valid: false, row: -1, col: -1 };
         // Check if the cell has already been shot
         if (this.board[row][col].shot)
-            return { valid: false };
+            return { valid: false, result: "Already shot", row, col };
         // If not, mark the cell as shot
         this.board[row][col].shot = true;
         // Delete the key-value from the unshotCells set
@@ -134,21 +134,27 @@ class Board {
         const ship = this.board[row][col].ship;
         // If there is no ship, return miss
         if (!ship) {
-            return { valid: true, result: "miss", ship: null };
+            return { valid: true, result: "miss", ship: null, row, col };
         }
         // If there is a ship, increase hit count
         ship.hit();
         // If the ship is sunk, check if all ships are sunk
         if (ship.isSunk()) {
             const result = this.allShipsSunk() ? "You Win" : "sunk";
-            return { valid: true, result, ship };
+            return { valid: true, result, ship, row, col };
         }
         // If the ship is not sunk, return hit
-        return { valid: true, result: "hit", ship: null };
+        return { valid: true, result: "hit", ship: null, row, col };
     }
     randomShoot() {
         if (this.unshotCells.size === 0) {
-            return { valid: false, result: "No more cells to shoot", ship: null };
+            return {
+                valid: false,
+                result: "No more cells to shoot",
+                ship: null,
+                row: -1,
+                col: -1,
+            };
         }
         // Pick a random unshot cell in the set
         const randomIndex = Math.floor(Math.random() * this.unshotCells.size);
@@ -164,25 +170,29 @@ class Board {
         const ship = this.board[row][col].ship;
         // If there is no ship, return miss
         if (!ship) {
-            return { valid: true, result: "miss", ship: null };
+            return { valid: true, result: "miss", ship: null, row, col };
         }
         // If there is a ship, increase hit count
         ship.hit();
         // If the ship is sunk, check if all ships are sunk
         if (ship.isSunk()) {
             const result = this.allShipsSunk() ? "You Win" : "sunk";
-            return { valid: true, result, ship };
+            return { valid: true, result, ship, row, col };
         }
         // If the ship is not sunk, return hit
-        return { valid: true, result: "hit", ship };
+        return { valid: true, result: "hit", ship, row, col };
     }
     shootIntelligently() {
         // Find hit cells and their neighbors
         const hitCells = [];
         const hitCellsNeighbors = [];
+        // Loop through the entire board to find all hit cells
+        //(this process is a bit inefficient but since it's only looping 1 to 100, it makes it not as bad)
         for (let i = 0; i < 10; i++) {
             for (let j = 0; j < 10; j++) {
+                // If the cell is shot and has a ship
                 if (this.board[i][j].shot && this.board[i][j].ship) {
+                    // We first add it to the hit array
                     hitCells.push({ row: i, col: j });
                     const neighbors = [
                         { row: i - 1, col: j },
@@ -190,6 +200,7 @@ class Board {
                         { row: i, col: j - 1 },
                         { row: i, col: j + 1 },
                     ];
+                    // Add all of the hit cell's neighbors onto the hitCellsNeighbors array if they fit the right conditions
                     for (const neighbor of neighbors) {
                         if (this.checkWithinBounds(neighbor.row, neighbor.col) &&
                             !this.board[neighbor.row][neighbor.col].shot &&
@@ -205,11 +216,7 @@ class Board {
             const randomElement = hitCellsNeighbors[Math.floor(Math.random() * hitCellsNeighbors.length)];
             return this.shoot(randomElement.row, randomElement.col);
         }
-        // If there are no hit cells, shoot randomly
-        if (hitCells.length === 0) {
-            return this.randomShoot();
-        }
-        // If there are hit cells but no unshot neighbors, shoot randomly
+        // Otherwise shoot randomly
         return this.randomShoot();
     }
     checkWithinBounds(row, col) {

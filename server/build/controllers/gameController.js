@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.reset = exports.getComputerBoard = exports.getBoard = exports.shoot = exports.startGame = void 0;
-const game_1 = require("../utils/game");
+exports.startGameRandom = exports.reset = exports.getComputerBoard = exports.getBoard = exports.shoot = exports.startGame = void 0;
+const gameClass_1 = require("../utils/gameClass");
 const generateBoard_1 = require("../utils/generateBoard");
 let playerTurn = true;
 let playerGame;
@@ -33,7 +33,7 @@ function startGame(req, res) {
     }
     for (let i = 0; i < playerShipPlacement.length; i++) {
         const { name, size, col, row, orientation } = playerShipPlacement[i];
-        const ship = new game_1.Ship(name, size, "player", "", []);
+        const ship = new gameClass_1.Ship(name, size, "player", "", []);
         const result = playerGame.placeShipsManual(row, col, ship, orientation);
         if (!result) {
             res.status(400).json({ message: "Ship Placement Invalid" });
@@ -43,6 +43,12 @@ function startGame(req, res) {
     res.status(200).json({ message: "Ships Placements Successful" });
 }
 exports.startGame = startGame;
+function startGameRandom(req, res) {
+    computerGame = (0, generateBoard_1.generateRandomBoard)();
+    playerGame = (0, generateBoard_1.generateRandomBoard)();
+    res.status(200).json({ message: "Ships Placements Successful" });
+}
+exports.startGameRandom = startGameRandom;
 function shoot(req, res) {
     if (gameOver) {
         res.status(400).send("Game Is Over: Press Reset");
@@ -61,8 +67,8 @@ function shoot(req, res) {
         res.status(400).json({ message: "Invalid input types" });
         return;
     }
-    if ((owner === "player" && playerTurn) ||
-        (owner === "computer" && !playerTurn)) {
+    if ((owner === "player" && !playerTurn) ||
+        (owner === "computer" && playerTurn)) {
         // Send a bad request response if it is not the correct turn
         res.status(400).json({ message: "Invalid turn" });
         return;
@@ -71,7 +77,7 @@ function shoot(req, res) {
         result = computerGame.shoot(row, col);
     }
     else {
-        result = playerGame.randomShoot();
+        result = playerGame.shootIntelligently();
     }
     if (result.valid) {
         playerTurn = !playerTurn;

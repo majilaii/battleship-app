@@ -1,4 +1,4 @@
-import { Board, Ship } from "./game";
+import { Board, Ship } from "./gameClass";
 export function generateRandomBoard(): Board {
   const board = new Board();
 
@@ -11,10 +11,10 @@ export function generateRandomBoard(): Board {
 
   // Place the ships on the board randomly
 
-  // board.placeShipsRandom(carrier);
-  // board.placeShipsRandom(battleship);
-  // board.placeShipsRandom(cruiser);
-  // board.placeShipsRandom(submarine);
+  board.placeShipsRandom(carrier);
+  board.placeShipsRandom(battleship);
+  board.placeShipsRandom(cruiser);
+  board.placeShipsRandom(submarine);
   board.placeShipsRandom(destroyer);
 
   // Return the board
