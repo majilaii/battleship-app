@@ -7,9 +7,15 @@ module.exports = {
     "./src/app/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
+    fontFamily: {
+      orbitron: ["Orbitron", "sans-serif"],
+      sans: ["Graphik", "sans-serif"],
+      serif: ["Merriweather", "serif"],
+      mono: ["Menlo", "monospace"],
+    },
     extend: {
       fontFamily: {
-        bangers: ["Bangers", "cursive"],
+        orbitron: ["Orbitron", "sans-serif"],
       },
     },
   },

@@ -1,6 +1,10 @@
 import React from "react";
-import { useEffect, useState } from "react";
+import Game from "../../../components/Game";
 
 export default function page() {
-  return <div>page</div>;
+  return (
+    <div>
+      <Game />
+    </div>
+  );
 }
