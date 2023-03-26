@@ -38,6 +38,8 @@ function startGame(req: Request, res: Response) {
     }
   }
 
+  gameOver = false;
+
   for (let i = 0; i < playerShipPlacement.length; i++) {
     const { name, size, col, row, orientation } = playerShipPlacement[i];
     const ship = new Ship(name, size, "player", "", []);
@@ -60,7 +62,7 @@ function startGameRandom(req: Request, res: Response) {
 
 function shoot(req: Request, res: Response) {
   if (gameOver) {
-    res.status(400).send("Game Is Over: Press Reset");
+    res.status(400).json({ message: "Game Is Over: Press Reset" });
     return;
   }
 
@@ -70,7 +72,9 @@ function shoot(req: Request, res: Response) {
     return;
   }
   const { row, col, owner } = req.body;
+
   let result: { valid: boolean; result?: string; ship?: Ship | null } | void;
+
   if (
     typeof row !== "number" ||
     typeof col !== "number" ||
@@ -98,6 +102,7 @@ function shoot(req: Request, res: Response) {
   if (result.valid) {
     playerTurn = !playerTurn;
     if (result.result === "You Win" || result.result === "You Lose") {
+      res.status(200).json(result);
       gameOver = true;
     }
     res.status(200).json(result);
