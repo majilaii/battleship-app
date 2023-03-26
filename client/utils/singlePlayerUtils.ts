@@ -25,7 +25,6 @@ export async function fetchComputerClick(): Promise<ClickReturnType> {
     body: JSON.stringify({ owner: "computer", row: 0, col: 0 }),
   });
   const response = await result.json();
-  console.log(response);
   return response;
 }
 
@@ -59,6 +58,5 @@ export async function fetchPlayerClick(
     body: JSON.stringify({ owner: "player", row, col }),
   });
   const response = await result.json();
-  console.log(response);
   return response;
 }

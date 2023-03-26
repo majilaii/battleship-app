@@ -68,7 +68,7 @@ function shoot(req: Request, res: Response) {
 
   if (!req.body || Object.keys(req.body).length === 0) {
     // Send an error response with status code 400 (Bad Request)
-    res.status(400).send("Bad Request: req.body is empty");
+    res.status(400).json({ message: "Bad Request: req.body is empty" });
     return;
   }
   const { row, col, owner } = req.body;

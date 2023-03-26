@@ -4,7 +4,7 @@ import { useState } from "react";
 import BattleshipGrid from "./BattleshipGrid";
 import ShipsMenu from "./ShipsMenu";
 import { handlePlayerClickOnComputerGrid } from "../utils/singlePlayerUtils";
-import { useRouter } from "next/navigation";
+import GameOverModal from "./GameOverModal";
 
 const AVAILABLE_SHIPS = [
   {
@@ -14,6 +14,8 @@ const AVAILABLE_SHIPS = [
     size: 5,
     orientation: "horizontal",
     placed: false,
+    valid: true,
+    coordinates: [],
   },
   {
     col: null,
@@ -22,6 +24,8 @@ const AVAILABLE_SHIPS = [
     orientation: "horizontal",
     size: 4,
     placed: false,
+    valid: true,
+    coordinates: [],
   },
   {
     col: null,
@@ -30,6 +34,8 @@ const AVAILABLE_SHIPS = [
     orientation: "horizontal",
     size: 3,
     placed: false,
+    valid: true,
+    coordinates: [],
   },
   {
     col: null,
@@ -38,6 +44,8 @@ const AVAILABLE_SHIPS = [
     name: "Submarine",
     size: 3,
     placed: false,
+    valid: true,
+    coordinates: [],
   },
   {
     col: null,
@@ -46,6 +54,8 @@ const AVAILABLE_SHIPS = [
     name: "Destroyer",
     size: 2,
     placed: false,
+    valid: true,
+    coordinates: [],
   },
 ];
 
@@ -56,13 +66,6 @@ export type ShipType = {
   name: string;
   size: number;
   placed: boolean;
-};
-
-export type ShipPlacement = {
-  row: number;
-  col: number;
-  size: number;
-  orientation: string;
   valid: boolean;
   coordinates: { row: number; col: number }[];
 };
@@ -79,48 +82,44 @@ export default function Game() {
   const [selectedShip, setSelectedShip] = useState<ShipType | null>(null);
   const [ships, setShips] = useState<ShipType[]>(AVAILABLE_SHIPS);
   const [startGame, setStartGame] = useState(false);
-  const [computerShootResult, setComputerShootResult] = useState<Array<string>>(
-    [""]
-  );
-  const [shipPlacement, setShipPlacement] = useState<ShipPlacement | null>(
-    null
-  );
   const [gameOver, setGameOver] = useState(false);
-  const router = useRouter();
+  const [whoWon, setWhoWon] = useState<"player" | "computer">("player");
+  const [rightClicked, setRightClicked] = useState(false);
 
+  // If right clicked to turn ship, we want to call handleMouseEnter function so we can immediately update the ship's direction in the frontend
+  // handleMouseButton is sent as props for the onMouseEnter property in the individual buttons (cells)
   useEffect(() => {
     if (
       selectedShip &&
       selectedShip.row !== null &&
       selectedShip.col !== null
     ) {
-      const { row, col, orientation, size } = selectedShip;
-      const valid = checkShipPlacement(row, col, size, orientation, playerGrid);
-
-      setShipPlacement({
-        row,
-        col,
-        size,
-        orientation,
-        valid,
-        coordinates: hoverPlaceShipCoordinates(row, col, size, orientation),
-      });
+      handleMouseEnter(selectedShip.row, selectedShip.col);
     }
-  }, [selectedShip, playerGrid]);
+  }, [rightClicked]);
 
+  // Generating a 10x10 grid filled with nulls
   function generateGrid() {
     return new Array(10).fill(null).map(() => new Array(10).fill(null));
   }
 
+  // Function for when we hover over cell
   function handleMouseEnter(row: number, col: number) {
     if (!selectedShip) return;
 
+    const { orientation, size } = selectedShip;
+    const valid = checkShipPlacement(row, col, size, orientation, playerGrid);
+    // Function for the user to see where all the ship's squares will be placed on the grid
+    const coordinates = hoverPlaceShipCoordinates(row, col, size, orientation);
+
+    // Update Selected Ship as we hover over different cells
     setSelectedShip((prevShip) => {
       if (!prevShip) return null;
-      return { ...prevShip, row, col };
+      return { ...prevShip, row, col, valid, coordinates };
     });
   }
 
+  // Loop through selected ship's length and add the potential coordinates into the ship's coordinates array
   function hoverPlaceShipCoordinates(
     row: number,
     col: number,
@@ -145,7 +144,7 @@ export default function Game() {
     orientation: string,
     grid: GridProps[]
   ): boolean {
-    //Checking if the ship we are going to place is going to be out of bounds
+    // Checking if the ship we are going to place is going to be out of bounds
     if (
       (orientation === "horizontal" && col + size > 10) ||
       (orientation === "vertical" && row + size > 10) ||
@@ -155,6 +154,7 @@ export default function Game() {
       return false;
     }
 
+    // Checking if the ship overlaps with other ships
     for (let i = 0; i < size; i++) {
       if (orientation === "horizontal") {
         if (grid[row][col + i] !== null) return false;
@@ -167,7 +167,7 @@ export default function Game() {
   }
 
   function handlePlayerCellClick(row: number, col: number) {
-    if (!shipPlacement || !shipPlacement.valid) return;
+    if (!selectedShip || !selectedShip.valid) return;
 
     if (selectedShip) {
       const newPlayerGrid = placeShips(
@@ -177,6 +177,7 @@ export default function Game() {
         selectedShip.orientation,
         playerGrid
       );
+
       setPlayerGrid(newPlayerGrid);
 
       selectedShip.placed = true;
@@ -198,12 +199,7 @@ export default function Game() {
       console.log(AVAILABLE_SHIPS);
 
       setSelectedShip(null);
-      setShipPlacement(null);
     }
-  }
-
-  function handleMouseLeave() {
-    setShipPlacement(null);
   }
 
   function placeShips(
@@ -214,8 +210,11 @@ export default function Game() {
     playerGrid: GridProps[]
   ) {
     console.log(orientation);
+
+    //Make new grid from playergrid
     const newGrid = [...playerGrid.map((r) => [...r])];
 
+    // Similar to backend, mark each spot occupied with the ship with the string 'ship', we will then add the colors on the playergrid in the Battleship component
     for (let i = 0; i < size; i++) {
       if (orientation === "horizontal") {
         newGrid[row][col + i] = "ship";
@@ -234,32 +233,47 @@ export default function Game() {
       return;
     }
 
+    setRightClicked((prevRightClicked) => !prevRightClicked);
+
+    // Adjust selected ship's orientation
     setSelectedShip((prevShip) => {
       if (!prevShip) return null;
+      const { row, col, size, orientation } = prevShip;
+      const coordinates = hoverPlaceShipCoordinates(
+        row as number,
+        col as number,
+        size,
+        orientation
+      );
+
       const newOrientation =
-        prevShip.orientation === "horizontal" ? "vertical" : "horizontal";
-      return { ...prevShip, orientation: newOrientation };
+        orientation === "horizontal" ? "vertical" : "horizontal";
+      return { ...prevShip, orientation: newOrientation, coordinates };
     });
   }
 
   async function handleComputerCellClick(row: number, col: number) {
     if (!startGame) return;
-    console.log(row, col);
 
+    // When the player clicks on computergrid, we will return the player's shoot result and also automatically trigger the computer to shoot the player's grid
     const response = await handlePlayerClickOnComputerGrid(row, col, startGame);
 
+    // We then update the player's and the computer's grid according to the results
     if (response?.computerShootResult) {
+      console.log(response.computerShootResult);
       const newGrid = [...playerGrid.map((r) => [...r])];
 
       const { result, row, col, ship } = response.computerShootResult;
 
-      if (result === "You Win") {
+      //If the returned result is You Win, we know the game is over and we trigger the Gameover modal
+      if (result === "You Win" && ship) {
+        for (let i = 0; i < ship.coordinates.length; i++) {
+          const { row, col } = ship.coordinates[i];
+          console.log({ i, row, col });
+          newGrid[row][col] = "sunk";
+        }
         setGameOver(true);
-        const queryParams = {
-          whoWon: "computer",
-        };
-        const queryString = new URLSearchParams(queryParams).toString();
-        router.push(`/gameover?${queryString}`);
+        setWhoWon("computer");
       }
 
       if (result === "hit") {
@@ -269,6 +283,8 @@ export default function Game() {
       if (result === "sunk" && ship) {
         for (let i = 0; i < ship.coordinates.length; i++) {
           const { row, col } = ship.coordinates[i];
+          console.log({ i, row, col });
+
           newGrid[row][col] = "sunk";
         }
       }
@@ -285,17 +301,14 @@ export default function Game() {
 
       const { result, row, col, ship } = response.playerShootResult;
 
+      //If the returned result is You Win, we know the game is over and we trigger the Gameover modal
       if (result === "You Win" && ship) {
         for (let i = 0; i < ship.coordinates.length; i++) {
           const { row, col } = ship.coordinates[i];
           newGrid[row][col] = "sunk";
         }
         setGameOver(true);
-        const queryParams = {
-          whoWon: "player",
-        };
-        const queryString = new URLSearchParams(queryParams).toString();
-        router.push(`/gameover?${queryString}`);
+        setWhoWon("player");
       }
 
       if (result === "hit") {
@@ -326,6 +339,15 @@ export default function Game() {
 
   return (
     <section className="flex items-center justify-evenly">
+      <GameOverModal
+        show={gameOver}
+        winner={whoWon}
+        onClose={() => {
+          restartGame();
+          setGameOver(false);
+          setStartGame(false);
+        }}
+      />
       <ShipsMenu
         setSelectedShip={setSelectedShip}
         ships={ships}
@@ -333,20 +355,18 @@ export default function Game() {
         setStartGame={setStartGame}
         startGame={startGame}
       />
-      <div
-        // onMouseLeave={handleMouseLeave}
-        onContextMenu={handleRightClick}
-        className="hover: cursor-crosshair"
-      >
+      <div onContextMenu={handleRightClick} className="hover: cursor-crosshair">
         <p className="text-blue-500 font-orbitron text-base mb-2">👤 Player:</p>
         <BattleshipGrid
+          // We pass a isComputer Boolean through each grid so we can pass on different logic depending on the grid
           isComputer={false}
           grid={playerGrid}
           onCellClick={handlePlayerCellClick}
           onMouseEnter={(row: number, col: number) =>
             handleMouseEnter(row, col)
           }
-          shipPlacement={shipPlacement}
+          shipPlacement={selectedShip}
+          startGame={startGame}
         />
       </div>
       <div className="hover: cursor-crosshair">

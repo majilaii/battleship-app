@@ -1,12 +1,13 @@
 import React from "react";
-import { ShipPlacement } from "./Game";
+import { ShipType } from "./Game";
 
 type GridProps = {
   isComputer: boolean;
   onCellClick?: (row: number, col: number) => void;
   grid: (string | null)[][];
   onMouseEnter?: (row: number, col: number) => void;
-  shipPlacement?: ShipPlacement | null;
+  shipPlacement?: ShipType | null;
+  startGame?: boolean;
 };
 
 export default function BattleshipGrid({
@@ -15,7 +16,9 @@ export default function BattleshipGrid({
   grid,
   onMouseEnter,
   shipPlacement,
+  startGame,
 }: GridProps) {
+  // This function will be called for each cell when we map out the player's and computer's grid, we will then return individual tailwind className strings for each of the grid's state
   function getCellBackgroundColor(row: number, col: number) {
     const cellData = grid[row][col];
     if (cellData === "hit") {
@@ -31,6 +34,7 @@ export default function BattleshipGrid({
     }
   }
 
+  // For when the user is hovering and placing a ship, if the cell itself is included selectedShips's coordinates array, we will return either blue or red depending on the validity of the placement
   function getCellBackgroundColorHover(row: number, col: number) {
     if (!shipPlacement?.coordinates) return;
 
@@ -55,11 +59,14 @@ export default function BattleshipGrid({
             <div
               key={colIndex}
               className={`w-10 h-10 border border-gray-300 text-center ${
-                !isComputer ? "hover:bg-blue-500" : "hover:bg-gray-500 "
-              } ${getCellBackgroundColorHover(
-                rowIndex,
-                colIndex
-              )} ${getCellBackgroundColor(rowIndex, colIndex)}
+                !isComputer && shipPlacement && !shipPlacement.valid
+                  ? "hover:bg-red-500"
+                  : !isComputer && shipPlacement && shipPlacement.valid
+                  ? "hover:bg-blue-500"
+                  : "hover:bg-gray-500 "
+              } ${
+                !startGame && getCellBackgroundColorHover(rowIndex, colIndex)
+              } ${getCellBackgroundColor(rowIndex, colIndex)}
                `}
               onClick={() => {
                 if (!isComputer) {

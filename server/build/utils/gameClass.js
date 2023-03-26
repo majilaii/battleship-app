@@ -45,12 +45,12 @@ class Board {
         // Checking if the placement of the ship is valid
         for (let i = 0; i < ship.size; i++) {
             if (orientation === "horizontal") {
-                if (row + i >= 10 || this.board[row][col].occupied) {
+                if (col + i >= 10 || this.board[row][col + i].occupied) {
                     return false;
                 }
             }
             else {
-                if (col + i >= 10 || this.board[row][col].occupied) {
+                if (row + i >= 10 || this.board[row + i][col].occupied) {
                     return false;
                 }
             }
@@ -66,7 +66,8 @@ class Board {
                 // If orientation is vertical, we add all the coordinates to the ship instance and modify the ship and occupied property on each cell it is on
                 this.board[row + i][col].occupied = true;
                 this.board[row + i][col].ship = ship;
-                ship.coordinates.push({ row: row + 1, col });
+                ship.coordinates.push({ row: row + i, col });
+                console.log(ship.coordinates);
             }
         }
         // Add to board's ship array

@@ -2,7 +2,6 @@ import React from "react";
 import { useState } from "react";
 import { Dispatch, SetStateAction } from "react";
 import { ShipType } from "./Game";
-import { useRouter } from "next/navigation";
 
 type ShipsMenuProps = {
   ships: ShipType[];
@@ -21,8 +20,7 @@ export default function ShipsMenu({
 }: ShipsMenuProps) {
   const [selectedButton, setSelectedButton] = useState<number | null>();
 
-  const router = useRouter();
-
+  //When all ships are placed, the user can initiate game and this will call the game endpoint in the backend
   async function initiateGame() {
     if (!checkAllShipsPlaced()) return;
 
@@ -46,11 +44,13 @@ export default function ShipsMenu({
 
   return (
     <section className="flex flex-col justify-evenly items-center gap-4 w-1/5">
-      <h1 className=" text-red-500 font-orbitron text-2xl ">Your Ships</h1>
+      <h1 className=" text-red-500 font-orbitron text-2xl ">Your Ships⚓</h1>
       {!checkAllShipsPlaced() && !startGame ? (
         <>
           {ships.map((element, index) => {
+            //If the ship is already placed, dont render it in the menu
             if (element.placed) return null;
+
             return (
               <React.Fragment key={index}>
                 <button
@@ -78,7 +78,7 @@ export default function ShipsMenu({
             );
           })}
           <p className="w-4/6 text-center text-xs">
-            Right click to rotate before you position
+            Right click to rotate your ship
           </p>
           <button
             className="text-red-500 underline text-sm"
