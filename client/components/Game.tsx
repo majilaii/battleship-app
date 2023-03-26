@@ -89,7 +89,11 @@ export default function Game() {
   const router = useRouter();
 
   useEffect(() => {
-    if (selectedShip && selectedShip.row && selectedShip.col) {
+    if (
+      selectedShip &&
+      selectedShip.row !== null &&
+      selectedShip.col !== null
+    ) {
       const { row, col, orientation, size } = selectedShip;
       const valid = checkShipPlacement(row, col, size, orientation, playerGrid);
 
@@ -111,48 +115,9 @@ export default function Game() {
   function handleMouseEnter(row: number, col: number) {
     if (!selectedShip) return;
 
-    const shipToPlace = ships.find((ship) => ship.name === selectedShip.name);
-
-    if (!shipToPlace) return;
-
-    const valid = checkShipPlacement(
-      row,
-      col,
-      shipToPlace.size,
-      shipToPlace.orientation,
-      playerGrid
-    );
-
-    setShips(
-      ships.map((ship) =>
-        ship.name === selectedShip.name
-          ? {
-              ...ship,
-              row,
-              col,
-              orientation: selectedShip.orientation,
-            }
-          : ship
-      )
-    );
-
     setSelectedShip((prevShip) => {
       if (!prevShip) return null;
       return { ...prevShip, row, col };
-    });
-
-    setShipPlacement({
-      row,
-      col,
-      size: shipToPlace.size,
-      orientation: shipToPlace.orientation,
-      valid,
-      coordinates: hoverPlaceShipCoordinates(
-        row,
-        col,
-        shipToPlace.size,
-        shipToPlace.orientation
-      ),
     });
   }
 
@@ -183,7 +148,9 @@ export default function Game() {
     //Checking if the ship we are going to place is going to be out of bounds
     if (
       (orientation === "horizontal" && col + size > 10) ||
-      (orientation === "vertical" && row + size > 10)
+      (orientation === "vertical" && row + size > 10) ||
+      (orientation === "horizontal" && row < 0) ||
+      (orientation === "vertical" && col < 0)
     ) {
       return false;
     }
@@ -367,11 +334,11 @@ export default function Game() {
         startGame={startGame}
       />
       <div
-        onMouseLeave={handleMouseLeave}
+        // onMouseLeave={handleMouseLeave}
         onContextMenu={handleRightClick}
         className="hover: cursor-crosshair"
       >
-        <p className="text-blue-500 font-orbitron text-base mb-2">Player:</p>
+        <p className="text-blue-500 font-orbitron text-base mb-2">👤 Player:</p>
         <BattleshipGrid
           isComputer={false}
           grid={playerGrid}
@@ -383,7 +350,9 @@ export default function Game() {
         />
       </div>
       <div className="hover: cursor-crosshair">
-        <p className="text-red-500 font-orbitron text-base mb-2">Computer:</p>
+        <p className="text-red-500 font-orbitron text-base mb-2">
+          🤖 Computer:
+        </p>
         <BattleshipGrid
           grid={computerGrid}
           onCellClick={handleComputerCellClick}

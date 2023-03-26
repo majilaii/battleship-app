@@ -82,9 +82,7 @@ export default function ShipsMenu({
           </p>
           <button
             className="text-red-500 underline text-sm"
-            onClick={() => {
-              router.refresh();
-            }}
+            onClick={restartGame}
           >
             Restart
           </button>

@@ -31,7 +31,21 @@ export default function BattleshipGrid({
     }
   }
 
-  function getCellBackgroundColorHover(row: number, col: number) {}
+  function getCellBackgroundColorHover(row: number, col: number) {
+    if (!shipPlacement?.coordinates) return;
+
+    for (let i = 0; i < shipPlacement?.coordinates.length; i++) {
+      if (
+        shipPlacement.coordinates[i].row === row &&
+        shipPlacement.coordinates[i].col === col
+      ) {
+        if (!shipPlacement.valid) {
+          return "bg-red-300";
+        }
+        return "bg-blue-300 ";
+      }
+    }
+  }
 
   return (
     <div className="grid grid-cols-10 border-2 border-solid border-gray-600">
@@ -40,10 +54,13 @@ export default function BattleshipGrid({
           {row.map((_col, colIndex) => (
             <div
               key={colIndex}
-              className={`w-10 h-10 border border-gray-300 text-center  hover:bg-blue-500 ${getCellBackgroundColor(
+              className={`w-10 h-10 border border-gray-300 text-center ${
+                !isComputer ? "hover:bg-blue-500" : "hover:bg-gray-500 "
+              } ${getCellBackgroundColorHover(
                 rowIndex,
                 colIndex
-              )} `}
+              )} ${getCellBackgroundColor(rowIndex, colIndex)}
+               `}
               onClick={() => {
                 if (!isComputer) {
                   if (shipPlacement && onCellClick && shipPlacement.valid) {
