@@ -46,13 +46,13 @@ export default function BattleshipGrid({
         if (!shipPlacement.valid) {
           return "bg-red-300";
         }
-        return "bg-blue-300 ";
+        return "bg-blue-400 ";
       }
     }
   }
 
   return (
-    <div className="grid grid-cols-10 border-2 border-solid border-gray-600 w-4/6 md:w-full">
+    <div className="grid grid-cols-10 border-2 border-solid border-gray-600 w-4/6 md:w-full ">
       {grid.map((row, rowIndex) => (
         <React.Fragment key={rowIndex}>
           {row.map((_col, colIndex) => (
