@@ -10,7 +10,7 @@ export default function HomePage() {
         </h1>
         <h2 className="text-center text-xl text-blue-300 font-orbitron">
           {" "}
-          A navy strategy game⚓
+          A naval strategy game⚓
         </h2>
       </div>
       <div className="flex flex-col items-center">
