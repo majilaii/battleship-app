@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
 import { Dispatch, SetStateAction } from "react";
 import { ShipType } from "./Game";
@@ -19,6 +19,10 @@ export default function ShipsMenu({
   startGame,
 }: ShipsMenuProps) {
   const [selectedButton, setSelectedButton] = useState<number | null>();
+
+  useEffect(() => {
+    setSelectedButton(null);
+  }, [startGame]);
 
   //When all ships are placed, the user can initiate game and this will call the game endpoint in the backend
   async function initiateGame() {

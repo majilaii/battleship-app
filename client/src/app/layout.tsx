@@ -1,3 +1,4 @@
+import Head from "next/head";
 import "./globals.css";
 
 export const metadata = {
@@ -12,6 +13,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <Head>
+        <title>Your Custom Title Here</title>
+      </Head>
       <body>{children}</body>
     </html>
   );
