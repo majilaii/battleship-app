@@ -338,7 +338,7 @@ export default function Game() {
   }
 
   return (
-    <section className="flex items-center justify-evenly">
+    <section className="md:flex md:items-center md:justify-evenly grid grid-cols-1 ">
       <GameOverModal
         show={gameOver}
         winner={whoWon}
@@ -355,7 +355,10 @@ export default function Game() {
         setStartGame={setStartGame}
         startGame={startGame}
       />
-      <div onContextMenu={handleRightClick} className="hover: cursor-crosshair">
+      <div
+        onContextMenu={handleRightClick}
+        className="hover: cursor-crosshair grid place-items-center"
+      >
         <p className="text-blue-500 font-orbitron text-base mb-2">👤 Player:</p>
         <BattleshipGrid
           // We pass a isComputer Boolean through each grid so we can pass on different logic depending on the grid
@@ -369,7 +372,7 @@ export default function Game() {
           startGame={startGame}
         />
       </div>
-      <div className="hover: cursor-crosshair">
+      <div className="hover: cursor-crosshair grid place-items-center">
         <p className="text-red-500 font-orbitron text-base mb-2">
           🤖 Computer:
         </p>

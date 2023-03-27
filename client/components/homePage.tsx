@@ -1,6 +1,5 @@
 import Link from "next/link";
 import React from "react";
-import { Orbitron, Bangers } from "next/font/google";
 
 export default function HomePage() {
   return (

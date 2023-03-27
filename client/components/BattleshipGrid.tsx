@@ -52,7 +52,7 @@ export default function BattleshipGrid({
   }
 
   return (
-    <div className="grid grid-cols-10 border-2 border-solid border-gray-600">
+    <div className="grid grid-cols-10 border-2 border-solid border-gray-600 w-4/6 md:w-full">
       {grid.map((row, rowIndex) => (
         <React.Fragment key={rowIndex}>
           {row.map((_col, colIndex) => (

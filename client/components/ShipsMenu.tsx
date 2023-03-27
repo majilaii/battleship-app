@@ -43,7 +43,7 @@ export default function ShipsMenu({
   }
 
   return (
-    <section className="flex flex-col justify-evenly items-center gap-4 w-1/5">
+    <section className=" flex flex-col justify-evenly items-center gap-4 md:w-1/5 ">
       <h1 className=" text-red-500 font-orbitron text-2xl ">Your Ships⚓</h1>
       {!checkAllShipsPlaced() && !startGame ? (
         <>
@@ -68,7 +68,7 @@ export default function ShipsMenu({
                       {Array.from({ length: element.size }).map((_, index) => (
                         <div
                           key={index}
-                          className=" w-3 h-3  border-[1px] border-solid border-yellow-500 bg-yellow-300"
+                          className="w-3 h-3  md:w-2 md:h-2 border-[1px] border-solid border-yellow-500 bg-yellow-300"
                         ></div>
                       ))}
                     </>
