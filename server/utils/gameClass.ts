@@ -277,6 +277,7 @@ export class Board {
 
           // Add all of the hit cell's neighbors onto the hitCellsNeighbors array if they fit the right conditions
           for (const neighbor of neighbors) {
+            // TODO: this is a bit too unrealistic of a bot. Add custom logic here to make it similar to human logic.
             if (
               this.checkWithinBounds(neighbor.row, neighbor.col) &&
               !this.board[neighbor.row][neighbor.col].shot &&
