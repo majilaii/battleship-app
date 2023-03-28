@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import { ShipType } from "./Game";
 
 type GridProps = {
@@ -10,7 +10,18 @@ type GridProps = {
   startGame?: boolean;
 };
 
-export default function BattleshipGrid({
+function checkPropsEqual(prevProps: GridProps, nextProps: GridProps) {
+  return (
+    prevProps.isComputer === nextProps.isComputer &&
+    prevProps.onCellClick === nextProps.onCellClick &&
+    prevProps.onMouseEnter === nextProps.onMouseEnter &&
+    prevProps.grid === nextProps.grid &&
+    prevProps.shipPlacement === nextProps.shipPlacement &&
+    prevProps.startGame === nextProps.startGame
+  );
+}
+
+export const BattleshipGrid = memo(function BattleshipGrid({
   isComputer,
   onCellClick,
   grid,
@@ -38,16 +49,14 @@ export default function BattleshipGrid({
   function getCellBackgroundColorHover(row: number, col: number) {
     if (!shipPlacement?.coordinates) return;
 
-    for (let i = 0; i < shipPlacement?.coordinates.length; i++) {
-      if (
-        shipPlacement.coordinates[i].row === row &&
-        shipPlacement.coordinates[i].col === col
-      ) {
-        if (!shipPlacement.valid) {
-          return "bg-red-300";
-        }
-        return "bg-blue-300 ";
+    const cellId = `${row},${col}`;
+    const isHovered = shipPlacement.coordinates.has(cellId);
+
+    if (isHovered) {
+      if (!shipPlacement.valid) {
+        return "bg-red-300";
       }
+      return "bg-blue-300";
     }
   }
 
@@ -86,4 +95,5 @@ export default function BattleshipGrid({
       ))}
     </div>
   );
-}
+},
+checkPropsEqual);

@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect } from "react";
 import { useState } from "react";
-import BattleshipGrid from "./BattleshipGrid";
+import { BattleshipGrid } from "./BattleshipGrid";
 import ShipsMenu from "./ShipsMenu";
 import { handlePlayerClickOnComputerGrid } from "../utils/singlePlayerUtils";
 import GameOverModal from "./GameOverModal";
@@ -15,7 +15,7 @@ const AVAILABLE_SHIPS = [
     orientation: "horizontal",
     placed: false,
     valid: true,
-    coordinates: [],
+    coordinates: new Set(),
   },
   {
     col: null,
@@ -25,7 +25,7 @@ const AVAILABLE_SHIPS = [
     size: 4,
     placed: false,
     valid: true,
-    coordinates: [],
+    coordinates: new Set(),
   },
   {
     col: null,
@@ -35,7 +35,7 @@ const AVAILABLE_SHIPS = [
     size: 3,
     placed: false,
     valid: true,
-    coordinates: [],
+    coordinates: new Set(),
   },
   {
     col: null,
@@ -45,7 +45,7 @@ const AVAILABLE_SHIPS = [
     size: 3,
     placed: false,
     valid: true,
-    coordinates: [],
+    coordinates: new Set(),
   },
   {
     col: null,
@@ -55,7 +55,7 @@ const AVAILABLE_SHIPS = [
     size: 2,
     placed: false,
     valid: true,
-    coordinates: [],
+    coordinates: new Set(),
   },
 ];
 
@@ -67,7 +67,7 @@ export type ShipType = {
   size: number;
   placed: boolean;
   valid: boolean;
-  coordinates: { row: number; col: number }[];
+  coordinates: Set<string | unknown>;
 };
 
 type GridProps = (string | null)[];
@@ -128,16 +128,16 @@ export default function Game() {
     col: number,
     size: number,
     orientation: string
-  ): { row: number; col: number }[] {
-    const res = [];
+  ): Set<string> {
+    const res = new Set();
     for (let i = 0; i < size; i++) {
       if (orientation === "horizontal") {
-        res.push({ row, col: col + i });
+        res.add(`${row},${col + i}`);
       } else {
-        res.push({ row: row + i, col });
+        res.add(`${row + i},${col}`);
       }
     }
-    return res;
+    return res as Set<string>;
   }
 
   function checkShipPlacement(
