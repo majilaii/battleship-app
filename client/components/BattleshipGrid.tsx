@@ -46,7 +46,7 @@ export default function BattleshipGrid({
         if (!shipPlacement.valid) {
           return "bg-red-300";
         }
-        return "bg-blue-400 ";
+        return "bg-blue-300 ";
       }
     }
   }

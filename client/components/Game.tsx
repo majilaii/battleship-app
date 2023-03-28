@@ -85,6 +85,9 @@ export default function Game() {
   const [gameOver, setGameOver] = useState(false);
   const [whoWon, setWhoWon] = useState<"player" | "computer">("player");
   const [rightClicked, setRightClicked] = useState(false);
+  const [amountHit, setAmountHit] = useState(0);
+  const [AmountShot, setAmountShot] = useState(0);
+  const [amountSunk, setAmountSunk] = useState(0);
 
   // If right clicked to turn ship, we want to call handleMouseEnter function so we can immediately update the ship's direction in the frontend
   // handleMouseButton is sent as props for the onMouseEnter property in the individual buttons (cells)
@@ -260,7 +263,6 @@ export default function Game() {
 
     // We then update the player's and the computer's grid according to the results
     if (response?.computerShootResult) {
-      console.log(response.computerShootResult);
       const newGrid = [...playerGrid.map((r) => [...r])];
 
       const { result, row, col, ship } = response.computerShootResult;
@@ -301,18 +303,23 @@ export default function Game() {
 
       const { result, row, col, ship } = response.playerShootResult;
 
+      setAmountShot((prev) => prev + 1);
+
       //If the returned result is You Win, we know the game is over and we trigger the Gameover modal
       if (result === "You Win" && ship) {
         for (let i = 0; i < ship.coordinates.length; i++) {
           const { row, col } = ship.coordinates[i];
           newGrid[row][col] = "sunk";
         }
+        setAmountSunk((prev) => prev + 1);
+        setAmountHit((prev) => prev + 1);
         setGameOver(true);
         setWhoWon("player");
       }
 
       if (result === "hit") {
         newGrid[row][col] = "hit";
+        setAmountHit((prev) => prev + 1);
       }
 
       if (result === "sunk" && ship) {
@@ -320,6 +327,8 @@ export default function Game() {
           const { row, col } = ship.coordinates[i];
           newGrid[row][col] = "sunk";
         }
+        setAmountSunk((prev) => prev + 1);
+        setAmountHit((prev) => prev + 1);
       }
 
       if (result === "miss") {
@@ -335,6 +344,9 @@ export default function Game() {
     setShips(AVAILABLE_SHIPS);
     setPlayerGrid(generateGrid());
     setComputerGrid(generateGrid());
+    setAmountHit(0);
+    setAmountSunk(0);
+    setAmountShot(0);
   }
 
   return (
@@ -347,6 +359,9 @@ export default function Game() {
           setGameOver(false);
           setStartGame(false);
         }}
+        amountHit={amountHit}
+        amountSunk={amountSunk}
+        amountShot={AmountShot}
       />
       <ShipsMenu
         setSelectedShip={setSelectedShip}

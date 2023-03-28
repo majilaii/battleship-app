@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { useState } from "react";
 import { Dispatch, SetStateAction } from "react";
 import { ShipType } from "./Game";
+import useGameInitiation from "../hooks/useGameInitiation";
 
 type ShipsMenuProps = {
   ships: ShipType[];
@@ -19,27 +20,21 @@ export default function ShipsMenu({
   startGame,
 }: ShipsMenuProps) {
   const [selectedButton, setSelectedButton] = useState<number | null>();
+  const { initiateGame } = useGameInitiation({
+    ships,
+    checkAllShipsPlaced,
+    startGame,
+  });
 
   useEffect(() => {
     setSelectedButton(null);
+    setSelectedShip(null);
   }, [startGame]);
 
-  //When all ships are placed, the user can initiate game and this will call the game endpoint in the backend
-  async function initiateGame() {
-    if (!checkAllShipsPlaced()) return;
-
+  async function pressStart() {
+    const result = await initiateGame();
+    console.log(result);
     setStartGame(true);
-
-    const result = await fetch("http://localhost:5000/singleplayer/game", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ playerShipPlacement: ships }),
-    });
-    const response = await result.json();
-    console.log(response);
-    return response;
   }
 
   function checkAllShipsPlaced() {
@@ -95,7 +90,7 @@ export default function ShipsMenu({
         <>
           <p>Ships are ready</p>
           <button
-            onClick={initiateGame}
+            onClick={pressStart}
             className="bg-red-500 hover:bg-red-700 text-white  py-4 px-6 rounded text-base"
           >
             {" "}
