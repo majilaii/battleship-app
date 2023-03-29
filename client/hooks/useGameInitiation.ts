@@ -1,10 +1,4 @@
-import {
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useEffect,
-  useState,
-} from "react";
+import { useEffect } from "react";
 import { ShipType } from "../components/Game";
 
 type UseGameInitiationProps = {

@@ -115,6 +115,7 @@ function shoot(req: Request, res: Response) {
       if (result.result === "You Win" || result.result === "You Lose") {
         res.status(200).json(result);
         gameOver = true;
+        return;
       }
       res.status(200).json(result);
       return;
